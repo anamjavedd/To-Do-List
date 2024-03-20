@@ -26,6 +26,7 @@
 import TagButtons from './Tag-Buttons.vue'
 import TodoList from './Todo-List.vue'
 import TodoForm from './Todo-Form.vue'
+import LocalStore from '@/services/LocalStore';
 
 
 export default {
@@ -34,8 +35,10 @@ export default {
     TodoList,
     TodoForm
   },
+  
   data() {
     return {
+      todoStore: new LocalStore('todos'),
       todos: [],
       currentTag: 'All',
       newTodo: '',
@@ -56,13 +59,8 @@ export default {
   },
   methods: {
     addTodo(todo) {
-      this.todos.push({
-        name: todo.name,
-        id: this.todos.length + 1,
-        tag: todo.tag,
-        editMode: false
-      });
-      this.saveTodosToLocalStorage();
+      this.todoStore.create(todo);
+      this.loadTodosFromStorage();
       this.newTodo = '';
       this.tag = 'Priority';
       this.showForm = false;
@@ -74,33 +72,26 @@ export default {
       this.showForm = !this.showForm;
     },
     deleteTodo(todoId) {
-      this.todos = this.todos.filter(todo => todo.id !== todoId);
-      this.saveTodosToLocalStorage();
+      this.todoStore.delete(todoId);
+      this.loadTodosFromStorage();
     },
     toggleEditMode(todo) {
       todo.editMode = !todo.editMode;
-      this.saveTodosToLocalStorage();
+      this.todoStore.update(todo.id, todo);
     },
 
-    saveEdit(todoId) {
-      this.todos = this.todos.filter(todo => todo.id !== todoId);
-      this.saveTodosToLocalStorage();
+    saveEdit(todo) {
+      this.todoStore.update(todo.id, todo);
     },
 
-    saveTodosToLocalStorage() {
-      localStorage.setItem('todos', JSON.stringify(this.todos));
-    },
-    loadTodosFromLocalStorage() {
-      const todosJson = localStorage.getItem('todos');
-      if (todosJson) {
-        this.todos = JSON.parse(todosJson);
-      }
+    loadTodosFromStorage() {
+      this.todos = this.todoStore.readAll();
     }
 
 
   },
-  created() {
-    this.loadTodosFromLocalStorage();
+   created() {
+    this.loadTodosFromStorage();
   }
 };
 </script>
