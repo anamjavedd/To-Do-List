@@ -38,6 +38,7 @@ class LocalStore {
     return updatedItem
   }
 
+
   delete(id) {
     let data = this.readAll()
     data = data.filter((item) => item.id !== id)
